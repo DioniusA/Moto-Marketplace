@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg-main text-white font-sans antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-card;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-subtle rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-muted;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-hover text-black font-semibold rounded-full px-6 py-3 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border border-border-subtle hover:border-primary text-white font-medium rounded-full px-6 py-3 transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-bg-card rounded-xl p-4;
+  }
+
+  .input-field {
+    @apply bg-bg-overlay border border-border-subtle rounded-full px-4 py-3 text-white placeholder-text-muted w-full focus:outline-none focus:border-primary transition-colors duration-200;
+  }
+
+  .nav-link {
+    @apply text-text-secondary hover:text-white transition-colors duration-200 font-medium;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-white;
+  }
+
+  .see-all {
+    @apply text-primary hover:text-primary-hover font-medium transition-colors duration-200;
+  }
+}
