@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { LayoutGrid, List } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
@@ -24,7 +24,7 @@ const DEFAULT_FILTERS: MarketplaceFilters = {
   search: "",
 };
 
-export default function MarketplacePage() {
+function MarketplacePageContent() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
@@ -211,5 +211,28 @@ export default function MarketplacePage() {
         />
       )}
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex flex-col bg-bg-main">
+          <div className="h-16 border-b border-border-subtle bg-bg-card animate-pulse" />
+          <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-10 space-y-6">
+            <div className="h-10 w-64 bg-bg-card rounded-lg animate-pulse" />
+            <div className="h-12 bg-bg-card rounded-xl animate-pulse" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-bg-card rounded-2xl h-52 animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <MarketplacePageContent />
+    </Suspense>
   );
 }

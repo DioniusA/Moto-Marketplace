@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock } from "lucide-react";
@@ -25,7 +25,7 @@ const MotoIcon = () => (
   </svg>
 );
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/";
@@ -155,5 +155,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-bg-main flex items-center justify-center">
+          <p className="text-text-muted">Loading…</p>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }
