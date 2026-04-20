@@ -1,15 +1,5 @@
--- =====================================================================
--- MOTO MARKETPLACE — Supabase Schema
--- Includes: tables, indexes, foreign keys, RLS policies, seed data
--- Run this in Supabase SQL Editor
--- =====================================================================
-
--- ---------- Extensions ----------
 create extension if not exists "uuid-ossp";
 
--- =====================================================================
--- 1. BRANDS
--- =====================================================================
 create table if not exists public.brands (
   id uuid primary key default uuid_generate_v4(),
   name text not null unique,
@@ -19,9 +9,6 @@ create table if not exists public.brands (
 );
 create index if not exists idx_brands_name on public.brands(name);
 
--- =====================================================================
--- 2. PRODUCTS
--- =====================================================================
 create table if not exists public.products (
   id uuid primary key default uuid_generate_v4(),
   title text not null,
@@ -41,9 +28,6 @@ create index if not exists idx_products_featured on public.products(featured);
 create index if not exists idx_products_price on public.products(price);
 create index if not exists idx_products_created_at on public.products(created_at desc);
 
--- =====================================================================
--- 3. FEATURED LISTINGS (auction/exclusive hero carousel)
--- =====================================================================
 create table if not exists public.featured_listings (
   id uuid primary key default uuid_generate_v4(),
   product_id uuid not null references public.products(id) on delete cascade,
@@ -54,9 +38,6 @@ create table if not exists public.featured_listings (
 );
 create index if not exists idx_featured_active on public.featured_listings(is_active);
 
--- =====================================================================
--- 4. PROFILES (extends auth.users)
--- =====================================================================
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique,
@@ -75,9 +56,6 @@ create table if not exists public.profiles (
 );
 create index if not exists idx_profiles_username on public.profiles(username);
 
--- =====================================================================
--- 5. CART ITEMS
--- =====================================================================
 create table if not exists public.cart_items (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -88,9 +66,6 @@ create table if not exists public.cart_items (
 );
 create index if not exists idx_cart_user on public.cart_items(user_id);
 
--- =====================================================================
--- 6. ORDERS
--- =====================================================================
 create table if not exists public.orders (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -101,9 +76,6 @@ create table if not exists public.orders (
 create index if not exists idx_orders_user on public.orders(user_id);
 create index if not exists idx_orders_status on public.orders(status);
 
--- =====================================================================
--- 7. ORDER ITEMS
--- =====================================================================
 create table if not exists public.order_items (
   id uuid primary key default uuid_generate_v4(),
   order_id uuid not null references public.orders(id) on delete cascade,
@@ -113,18 +85,12 @@ create table if not exists public.order_items (
 );
 create index if not exists idx_order_items_order on public.order_items(order_id);
 
--- =====================================================================
--- 8. NEWSLETTER SUBSCRIBERS
--- =====================================================================
 create table if not exists public.newsletter_subscribers (
   id uuid primary key default uuid_generate_v4(),
   email text not null unique,
   created_at timestamptz not null default now()
 );
 
--- =====================================================================
--- TRIGGER: Auto-create profile on user signup
--- =====================================================================
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -146,9 +112,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- =====================================================================
--- ROW LEVEL SECURITY
--- =====================================================================
 alter table public.brands enable row level security;
 alter table public.products enable row level security;
 alter table public.featured_listings enable row level security;
@@ -158,25 +121,21 @@ alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.newsletter_subscribers enable row level security;
 
--- ---------- BRANDS: public read ----------
 drop policy if exists "Brands are viewable by everyone" on public.brands;
 create policy "Brands are viewable by everyone"
   on public.brands for select
   using (true);
 
--- ---------- PRODUCTS: public read ----------
 drop policy if exists "Products are viewable by everyone" on public.products;
 create policy "Products are viewable by everyone"
   on public.products for select
   using (true);
 
--- ---------- FEATURED LISTINGS: public read ----------
 drop policy if exists "Featured listings are viewable by everyone" on public.featured_listings;
 create policy "Featured listings are viewable by everyone"
   on public.featured_listings for select
   using (true);
 
--- ---------- PROFILES ----------
 drop policy if exists "Profiles are viewable by everyone" on public.profiles;
 create policy "Profiles are viewable by everyone"
   on public.profiles for select
@@ -192,7 +151,6 @@ create policy "Users can update their own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
--- ---------- CART ITEMS: user-scoped ----------
 drop policy if exists "Users can view their own cart" on public.cart_items;
 create policy "Users can view their own cart"
   on public.cart_items for select
@@ -213,7 +171,6 @@ create policy "Users can delete from their own cart"
   on public.cart_items for delete
   using (auth.uid() = user_id);
 
--- ---------- ORDERS: user-scoped ----------
 drop policy if exists "Users can view their own orders" on public.orders;
 create policy "Users can view their own orders"
   on public.orders for select
@@ -224,7 +181,6 @@ create policy "Users can create their own orders"
   on public.orders for insert
   with check (auth.uid() = user_id);
 
--- ---------- ORDER ITEMS: via parent order ----------
 drop policy if exists "Users can view their own order items" on public.order_items;
 create policy "Users can view their own order items"
   on public.order_items for select
@@ -235,20 +191,15 @@ create policy "Users can insert their own order items"
   on public.order_items for insert
   with check (exists (select 1 from public.orders o where o.id = order_id and o.user_id = auth.uid()));
 
--- ---------- NEWSLETTER: anyone can subscribe, no reads ----------
 drop policy if exists "Anyone can subscribe" on public.newsletter_subscribers;
 create policy "Anyone can subscribe"
   on public.newsletter_subscribers for insert
   with check (true);
 
--- =====================================================================
--- STORAGE BUCKETS
--- =====================================================================
 insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true) on conflict do nothing;
 insert into storage.buckets (id, name, public) values ('products', 'products', true) on conflict do nothing;
 insert into storage.buckets (id, name, public) values ('documents', 'documents', false) on conflict do nothing;
 
--- Avatar policies
 drop policy if exists "Avatar images are publicly accessible" on storage.objects;
 create policy "Avatar images are publicly accessible"
   on storage.objects for select
@@ -264,7 +215,6 @@ create policy "Users can update their own avatar"
   on storage.objects for update
   using (bucket_id = 'avatars' and auth.role() = 'authenticated');
 
--- Document policies (private)
 drop policy if exists "Users can upload their own documents" on storage.objects;
 create policy "Users can upload their own documents"
   on storage.objects for insert
@@ -275,11 +225,6 @@ create policy "Users can read their own documents"
   on storage.objects for select
   using (bucket_id = 'documents' and (storage.foldername(name))[2] = auth.uid()::text);
 
--- =====================================================================
--- SEED DATA
--- =====================================================================
-
--- Seed brands
 insert into public.brands (name, total_sales_eth) values
   ('Yamaha',   34.53),
   ('Honda',    34.62),
@@ -291,7 +236,6 @@ insert into public.brands (name, total_sales_eth) values
   ('More',     34.53)
 on conflict (name) do nothing;
 
--- Seed products
 do $$
 declare
   yamaha_id uuid; honda_id uuid; kawasaki_id uuid; suzuki_id uuid;
@@ -316,7 +260,6 @@ begin
     ('Honda NT1100 DCT','Motorcycles', honda_id,   10000000,  5000, 'Touring motorcycle built for long-distance comfort.', 4.9, false)
   on conflict do nothing;
 
-  -- Seed featured auction listings
   insert into public.featured_listings (product_id, auction_end_time, color_theme, is_active)
   select id, now() + interval '3 hours', 'green',  true from public.products where title = 'Kawasaki H2R' limit 1;
   insert into public.featured_listings (product_id, auction_end_time, color_theme, is_active)

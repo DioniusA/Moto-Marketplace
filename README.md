@@ -2,6 +2,12 @@
 
 Production-ready Next.js 14 + Supabase motorcycle marketplace built from the Figma design.
 
+## Live site (Vercel)
+
+The project is deployed on [Vercel](https://vercel.com/). Open the production app here: [https://moto-marketplace-hvf2.vercel.app/](https://moto-marketplace-hvf2.vercel.app/).
+
+For your own deployment, connect the Git repository in the Vercel dashboard, set the same environment variables as in `.env.local.example` (Supabase URL and anon key), and use the default Next.js build settings.
+
 ## Assumptions
 
 Items inferred from the Figma design that the brief didn't explicitly spell out:
@@ -39,13 +45,13 @@ Items inferred from the Figma design that the brief didn't explicitly spell out:
 ```
 final/
 ├── app/
-│   ├── layout.tsx                    # Root layout
-│   ├── globals.css                   # Tailwind + theme overrides
-│   ├── page.tsx                      # Home (Featured / Brands / Top Deals)
+│   ├── layout.tsx
+│   ├── globals.css
+│   ├── page.tsx
 │   ├── marketplace/
-│   │   ├── page.tsx                  # Browse with filters
+│   │   ├── page.tsx
 │   │   └── [id]/
-│   │       ├── page.tsx              # Product detail
+│   │       ├── page.tsx
 │   │       └── not-found.tsx
 │   ├── cart/page.tsx
 │   ├── profile/page.tsx
@@ -53,7 +59,7 @@ final/
 │   ├── rentals/page.tsx
 │   ├── about/page.tsx
 │   └── auth/
-│       ├── signup/page.tsx           # 3-step signup
+│       ├── signup/page.tsx
 │       └── login/page.tsx
 ├── components/
 │   ├── ui/{Button,Input}.tsx
@@ -66,7 +72,7 @@ final/
 │   ├── supabase/{client,server,middleware}.ts
 │   ├── types/index.ts
 │   └── utils.ts
-├── supabase/schema.sql               # Tables + RLS + seed
+├── supabase/schema.sql
 ├── middleware.ts
 ├── tailwind.config.ts
 ├── next.config.mjs
